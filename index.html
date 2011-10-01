@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Foodpot</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+  </head>
+  <body>
+    <h1 id="title">foodpot</h1>
+    <div id="message">
+      Today's order is ORDER.<br>
+      The pot is PHRASE.
+    </div>
+    <div id="potimage"><img src="/static/pot.jpg"></img></div>
+    <div id="form">
+      <input type="text" id="username" placeholder="username">
+      <input type="password" id="password" placeholder="password">
+      <input type="button" id="order" value="order!">
+    </div>
+  </body>
+<script>
+  $(document).ready(function() {
+    $("#order").click(function() {
+      $.post('/order',
+             {'username': $("#username").value(),
+               'password': $("#password").value()},
+             function(data, textStatus, jqXHR) {
+               if (data['win']) {
+                 alert("You won!");
+               } else {
+                 alert("You didn't win.");
+               }
+             });
+    });
+  });
+</script>
+</html>
+
