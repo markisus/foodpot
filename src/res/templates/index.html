@@ -10,12 +10,32 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/static/potlistener.js"></script>
+<script type="text/javascript" src="/static/spin.js"></script>
 <script type="text/javascript">
 console.log("Starting embedded jscript");
+
+
+var opts = {
+  lines: 12, // The number of lines to draw
+  length: 7, // The length of each line
+  width: 4, // The line thickness
+  radius: 10, // The radius of the inner circle
+  color: '#000', // #rgb or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false // Whether to render a shadow
+};
+
+var target1 = document.getElementById("result");
+var target2 = document.getElementById("result");
+var spinner;
+var spinner2;
+
 function userFormSubmit()
 {
 	try
 	{
+		spinner = new Spinner(opts).spin(target1);
 		$.post("/info/", {username : document.userForm.email.value, password : document.userForm.password.value}, processSignInResponse);
 		
 		document.getElementById("userForm").style.display = "none";
@@ -33,7 +53,10 @@ function submitCCAddr(data)
 	try
 	{
 		console.log("Submitting order!");
+		//document.getElementById("spinner").style.display = "inline";
+		spinner2 = new Spinner(opts).spin(target2);
 		$.post("/order/", {username : document.userForm.email.value, password : document.userForm.password.value, address_nick : document.postSignIn.addrNick.value, card_nick : document.postSignIn.ccNick.value}, processResponse);
+	
 	} catch (err)
 	{
 		console.log(err);
@@ -67,6 +90,9 @@ function processSignInResponse(data)
 		
 		addrdrop.options.add(optn);
 	}
+	
+	//document.getElementById("spinner").style.display = "none";
+	spinner.stop();
 }
 
 function processResponse(data)
@@ -74,6 +100,9 @@ function processResponse(data)
 	console.log("Processing response for an order");
 	console.log(data);
 	document.getElementById("postSignIn").style.display = "none";
+	//document.getElementById("spinner").style.display = "none";
+	spinner2.stop()
+	
 	switch(data)
 	{
 		case "00" : showResult("You did not win a free meal, but look on the bright side, at least your order was placed successfully."); break;
@@ -109,6 +138,7 @@ Order Info:
 <option>Select Saved Address</option>
 </select>
 <input type="submit" onclick="submitCCAddr(); return false;" value="Select" />
+<img id="spinner" src="/static/spinner.gif" style="display:none">
 </form>
 
 <div id="result">
