@@ -46,8 +46,12 @@ class Order(tornado.web.RequestHandler):
     def get(self):
         self.post()
     
-    def post(self, username, password, address_nick, card_nick):
-
+    def post(self):
+        username = self.get_argument("username")
+        password = self.get_argument("password")
+        address_nick = self.get_argument("address_nick")
+        card_nick = self.get_argument("card_nick")
+        
         order_amount = 1000
         if foodpot.amount > order_amount:
             #Make the order with the company's CC
@@ -108,7 +112,10 @@ class CurrentPot(tornado.web.RequestHandler):
         self.write(str(foodpot.amount))
 
 class Info(tornado.web.RequestHandler):
-    def post(self, username, password):
+    def post(self):
+        username = self.get_argument("username")
+        password = self.get_argument("password")
+
         Ordrin.api.initialize("https://u-test.ordr.in/", api_key)
         Ordrin.api.setCurrAcct(username, password)
         addresses = Ordrin.u.getAddress()
