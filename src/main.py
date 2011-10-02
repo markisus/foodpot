@@ -7,6 +7,7 @@ import urllib2
 import tornado.ioloop
 import tornado.web
 import tornado.template
+import threading
 
 loader = tornado.template.Loader(os.path.join(os.path.dirname(__file__), "res", "templates"))
 
@@ -17,6 +18,7 @@ tip="0"
 dDate="10-03"
 dTime="13:00"
 api_key = "GO-G43js4BGzQP2Ku8bTaA"
+order_amount = 1000
 
 #The foodpot keeps track of how much money is available
 class FoodPot:
@@ -41,53 +43,88 @@ class MainPage(tornado.web.RequestHandler):
 
 listener_callbacks = []
 
+def make_loser_query(callback_method, username, password, address_nick, card_nick):
+    def loser_query():
+        Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")
+        Ordrin.api.setCurrAcct(username, password)            
+        result = Ordrin.o.submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick)
+        foodpot.add_amount(int(order_amount*.01))
+        loop = tornado.ioloop.IOLoop.instance()
+        def callback():
+            callback_method(result)
+        loop.add_callback(callback)
+    return loser_query
+
+def make_winner_query(callback_method, username, password, address_nick):
+    def winner_query():
+        Ordrin.api.initialize(api_key, "https://u-test.ordr.in/")
+        Ordrin.api.setCurrAcct(username, password)
+        addr_json = Ordrin.u.getAddress(address_nick)
+        Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")            
+        #Log in as Mark and pay for the user's meal
+        Ordrin.api.setCurrAcct("marksisus@gmail.com", "password")
+        result = Ordrin.o.submit_complete(restid, tray, tip, dDate, dTime, "cc", 
+                                          addr=addr_json['addr'], 
+                                          city=addr_json['city'], 
+                                          state=addr_json['state'], 
+                                          zip=addr_json['zip'], 
+                                          phone=addr_json['phone'])
+        loop = tornado.ioloop.IOLoop.instance()
+        def callback():
+            callback_method(result)
+        loop.add_callback(callback)
+    return winner_query()
+
 class Order(tornado.web.RequestHandler):
     #Placeholder for testing purposes
     def get(self):
         self.post()
-    
+        
+    @tornado.web.asynchronous   
     def post(self):
         username = self.get_argument("username")
         password = self.get_argument("password")
         address_nick = self.get_argument("address_nick")
         card_nick = self.get_argument("card_nick")
         
-        order_amount = 1000
         if foodpot.amount > order_amount:
-            #Make the order with the company's CC
-            #First ask for the user's address
-            Ordrin.api.initialize(api_key, "https://u-test.ordr.in/")
-            Ordrin.api.setCurrAcct(username, password)
-            addr_json = Ordrin.u.getAddress(address_nick)
-            
-            Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")            
-            #Log in as Mark and pay for the user's meal
-            Ordrin.api.setCurrAcct("marksisus@gmail.com", "password")
-            result = Ordrin.o.submit_complete(restid, tray, tip, dDate, dTime, card_nick, 
-                                              addr=addr_json['addr'], 
-                                              city=addr_json['city'], 
-                                              state=addr_json['state'], 
-                                              zip=addr_json['zip'], 
-                                              phone=addr_json['phone'])
-            #Todo:Check for errors
             foodpot.subtract_amount(order_amount)
-            self.write("10")            
+            self.notify_foodpot_listeners()
+            #Make the order with the company's CC
+            threaded_call = make_winner_query(self.notify_winner, username, password, address_nick)
+            thread = threading.Thread(target=threaded_call)
+            thread.start()
             
-        else:
-                
+        else:                
             #Make the order with the user's CC
-            Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")
-            Ordrin.api.setCurrAcct(username, password)            
-            Ordrin.o.submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick)
-            foodpot.add_amount(int(order_amount*.01))
-            
-            self.write("00")
-            
+            threaded_call = make_loser_query(self.notify_loser, username, password, address_nick, card_nick)
+            thread = threading.Thread(target=threaded_call)
+            thread.start()
+
+    def notify_foodpot_listeners(self):
         while listener_callbacks:
             callback = listener_callbacks.pop()
             print("Notifying listener " + str(callback.id))
             callback.notify(foodpot.amount)
-
+        
+    def notify_winner(self, data):
+        print("Notifying winner " + str(data))
+        if self.request.connection.stream.closed() or self._finished:
+            return
+        print("Writing 10")
+        self.write("10")
+        self.finish()
+        
+    def notify_loser(self, data):
+        print("Notifying loser " + str(data))
+        foodpot.add_amount(int(order_amount*.01))
+        self.notify_foodpot_listeners()
+        if self.request.connection.stream.closed() or self._finished:
+            return
+        print("Writing 00")
+        self.write("00")
+        self.finish()
+        
 class ListenRandomizer(tornado.web.RequestHandler):
     def get(self):
         randomstring = str(time.time()).replace(".", "") + str(random.randint(0,9999999))
@@ -111,17 +148,35 @@ class CurrentPot(tornado.web.RequestHandler):
     def get(self):
         self.write(str(foodpot.amount))
 
-class Info(tornado.web.RequestHandler):
-    def post(self):
-        username = self.get_argument("username")
-        password = self.get_argument("password")
-
+def generate_info_query(callback_method, username, password):
+    def get_addresses_and_ccards():
         Ordrin.api.initialize(api_key, "https://u-test.ordr.in/")
         Ordrin.api.setCurrAcct(username, password)
         addresses = Ordrin.u.getAddress()
         creditcards = Ordrin.u.getCard()
-        info = {"addresses":addresses, "creditcards":creditcards}
-        self.write(json.dumps(info))
+        info = json.dumps({"addresses":addresses, "creditcards":creditcards})
+        loop = tornado.ioloop.IOLoop.instance()
+        def callback():
+            callback_method(info)
+        loop.add_callback(callback)
+    return get_addresses_and_ccards
+    
+
+class Info(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        username = self.get_argument("username")
+        password = self.get_argument("password")
+        threaded_call = generate_info_query(self.notify, username, password)
+        thread = threading.Thread(target=threaded_call)
+        thread.start()
+    
+    def notify(self, info):
+        print("Inside Info.notify, info is " + info)
+        if self.request.connection.stream.closed() or self._finished:
+            return
+        self.write(info)
+        self.finish()
         
 application = tornado.web.Application([
                                        (r"/", MainPage),
