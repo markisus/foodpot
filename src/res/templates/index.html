@@ -2,6 +2,11 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<center>
+<img src="/static/banner4.png" alt="Welcome to FoodPot!">
+</center>
+<title>FoodPot</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css">
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/static/potlistener.js"></script>
@@ -82,29 +87,29 @@ function showResult(message)
 </script>
 </head>
 <body onload="draw();">
+<center>
 <canvas id="canvas" width="10" height="300" border="1"></canvas>
 <form name="userForm" id="userForm">
-Email: <input type="text" name="email" />
-<br>
-Password: <input type="password" name="password" />
-<br>
-<a href="#" onclick="userFormSubmit(); return false;">Submit</a>
+Login: <input type="text" name="email" placeholder="Email" style="width:150px"/> 
+<input type="password" name="password" placeholder="Password" style="width:150px"/>
+<input type="submit" onclick="userFormSubmit(); return false;" value="Login" />
 </form>
-
+</center>
+<center>
 <form name="postSignIn" id="postSignIn" style="display:none">
-<select name="ccNick" id="ccDrop">
-<option>Select Credit Card Nickname</option>
+Order Info:
+<select name="ccNick" id="ccDrop" style="width:150px">
+<option>Select Saved Credit Card</option>
 </select>
-<br>
-<br>
-<select name="addrNick" id="addrDrop">
-<option>Select Address NickName</option>
+<select name="addrNick" id="addrDrop" style="width:150px">
+<option>Select Saved Address</option>
 </select>
-<input type="submit" onclick="submitCCAddr(); return false;" value="Submit" />
+<input type="submit" onclick="submitCCAddr(); return false;" value="Select" />
 </form>
 
 <div id="result">
 
 </div>
+</center>
 </body>
 </html>
