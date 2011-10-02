@@ -78,6 +78,7 @@ function processSignInResponse(data)
 
 function processResponse(data)
 {
+	document.getElementById("postSignIn").style.display = "none";
 	switch(data)
 	{
 		case "00" : showResult("You did not win a free meal, but look on the bright side, at least your order was placed successfully."); break;
