@@ -47,8 +47,7 @@ def make_loser_query(callback_method, username, password, address_nick, card_nic
     def loser_query():
         Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")
         Ordrin.api.setCurrAcct(username, password)            
-        result = Ordrin.o.submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick)
-        foodpot.add_amount(int(order_amount*.01))
+        result = Ordrin.o.submit_less(restid, tray, str(random.randint(0,9999999)), dDate, dTime, card_nick, address_nick)
         loop = tornado.ioloop.IOLoop.instance()
         def callback():
             callback_method(result)
@@ -63,7 +62,7 @@ def make_winner_query(callback_method, username, password, address_nick):
         Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")            
         #Log in as Mark and pay for the user's meal
         Ordrin.api.setCurrAcct("marksisus@gmail.com", "password")
-        result = Ordrin.o.submit_complete(restid, tray, tip, dDate, dTime, "cc", 
+        result = Ordrin.o.submit_complete(restid, tray, str(random.randint(0,9999999)), dDate, dTime, "cc", 
                                           addr=addr_json['addr'], 
                                           city=addr_json['city'], 
                                           state=addr_json['state'], 
@@ -111,19 +110,27 @@ class Order(tornado.web.RequestHandler):
         print("Notifying winner " + str(data))
         if self.request.connection.stream.closed() or self._finished:
             return
-        print("Writing 10")
-        self.write("10")
-        self.finish()
+        if data['_error'] == 1:
+            self.write("11")
+            self.finish()
+        else:
+            print("Writing 10")
+            self.write("10")
+            self.finish()
         
     def notify_loser(self, data):
         print("Notifying loser " + str(data))
-        foodpot.add_amount(int(order_amount*.01))
-        self.notify_foodpot_listeners()
         if self.request.connection.stream.closed() or self._finished:
             return
-        print("Writing 00")
-        self.write("00")
-        self.finish()
+        if data['_error'] == 1:
+            self.write("01")
+            self.finish()
+        else:
+            foodpot.add_amount(int(order_amount*.01))
+            self.notify_foodpot_listeners()
+            print("Writing 00")
+            self.write("00")
+            self.finish()
         
 class ListenRandomizer(tornado.web.RequestHandler):
     def get(self):
@@ -178,6 +185,10 @@ class Info(tornado.web.RequestHandler):
         self.write(info)
         self.finish()
         
+class FakeMessage(tornado.web.RequestHandler):
+    def post(self):
+        self.write("This is the guy who runs localtunnel. YOU ARE BANNED! GO AWAY")
+        
 application = tornado.web.Application([
                                        (r"/", MainPage),
                                        (r"/order/?", Order),
@@ -185,6 +196,7 @@ application = tornado.web.Application([
                                        (r"/listen/(\d+)/?", ListenPot),
                                        (r'/currentpot/?', CurrentPot),
                                        (r'/info/?', Info),
+                                       (r'/callbacks/geo/london/', FakeMessage)
                                        ],
                                       static_path= os.path.join(os.path.dirname(__file__), "res", "static")
                                       )

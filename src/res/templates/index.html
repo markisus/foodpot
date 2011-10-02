@@ -18,13 +18,24 @@
 <body onload="draw();">
 <br/><br/><br/><br/>
 <center>
+<div id='progressbar' style="width:300px"></div>
+- foodpot size -<br/>
+<br/>
+<h1>
+Your Order: Steak - $10.99 - Chilli's
+</h1>
+Test user: markisus@gmail.com <br/>
+Test pass: password
+<br/>
+<br/>
+<div id="result" style="font-size:large">
+</div>
+<br/>
 <form name="userForm" id="userForm">
 Login: <input type="text" name="email" placeholder="Email" style="width:150px"/> 
 <input type="password" name="password" placeholder="Password" style="width:150px"/>
 <input type="submit" onclick="userFormSubmit(); return false;" value="Login" />
 </form>
-</center>
-<center>
 <form name="postSignIn" id="postSignIn" style="display:none">
 Order Info:
 <select name="ccNick" id="ccDrop" style="width:150px">
@@ -35,12 +46,9 @@ Order Info:
 </select>
 <input type="submit" onclick="submitCCAddr(); return false;" value="Select" />
 </form>
-<div id="result">
-</div>
-
-<div id='progressbar' style="width:300px"></div>
 </center>
 
+<div id='status'></div>
 <script type="text/javascript">
 console.log("Starting embedded jscript");
 
