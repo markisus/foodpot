@@ -1,0 +1,4 @@
+run main.py for the server
+go to localhost:8888
+/listen to listen for pot changes
+/order to place a dummy order
