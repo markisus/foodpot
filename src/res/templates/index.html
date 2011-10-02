@@ -27,6 +27,7 @@ function submitCCAddr(data)
 {
 	try
 	{
+		console.log("Submitting order!");
 		$.post("/order/", {username : document.userForm.email.value, password : document.userForm.password.value, address_nick : document.postSignIn.addrNick.value, card_nick : document.postSignIn.ccNick.value}, processResponse);
 	} catch (err)
 	{
@@ -36,6 +37,7 @@ function submitCCAddr(data)
 
 function processSignInResponse(data)
 {
+	console.log("Processing response for an sign in");
 	var obj = $.parseJSON(data);
 	
 	var addr = obj.addresses;
@@ -64,6 +66,8 @@ function processSignInResponse(data)
 
 function processResponse(data)
 {
+	console.log("Processing response for an order");
+	console.log(data);
 	document.getElementById("postSignIn").style.display = "none";
 	switch(data)
 	{

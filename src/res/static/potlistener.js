@@ -21,6 +21,7 @@ function draw() {
 		$.get("/listen/", function(data) {
 			console.log("In listen callback");
 			drawBar(data);
+			console.log("Scheduling another listen");
 			listen();
 		});
 		console.log("Finished calling listen.");

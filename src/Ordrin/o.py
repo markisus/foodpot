@@ -22,7 +22,7 @@ import api, re
 #  api._request("POST", "o", restaurantID, "tray=" + tray, "tip=" + tip._convertForRAPI(), "delivery_date=" + date, "delivery_time=" + time, "first_name=" + first_name, "last_name=" + last_name, "addr=" + addr._street, "city=" + addr.city, "state=" + addr.state, "zip=" + addr.zip, "phone=" + addr.phone, "em=" + _currEmail, "password=" + _currPass, "card_name=" + card_name, "card_number=" + card_number, "card_cvc=" + card_cvc, "card_expiry=" + card_expiry, "card_bill_addr=" + ccAddr._street, "card_bill_addr2=" + ccAddr._street2, "card_bill_city=" + ccAddr.city, "card_bill_state=" + ccAddr.state, "card_bill_zip=" + ccAddr.zip, "type=RES");
 
 def submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick):
-    api._request("POST", "o", restid,
+    return api._request("POST", "o", restid,
                  "tray=" + tray, 
                  "tip=" + tip, 
                  "delivery_date=" + dDate, 
@@ -31,7 +31,7 @@ def submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick):
                  "card_nick=" + card_nick, "nick=" + address_nick)
     
 def submit_complete(restid, tray, tip, dDate, dTime, card_nick, addr, city, state, zip, phone):
-    api._request("POST", "o", restid,
+    return api._request("POST", "o", restid,
              "tray=" + tray, 
              "tip=" + tip, 
              "delivery_date=" + dDate, 
