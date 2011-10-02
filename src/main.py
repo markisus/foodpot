@@ -1,6 +1,7 @@
 import os.path
 import Ordrin
 import time
+import random
 import json
 import urllib2
 import tornado.ioloop
@@ -25,15 +26,10 @@ class FoodPot:
 
 foodpot = FoodPot()
 
-#Initialize Ordrin
-api_key = "GO-G43js4BGzQP2Ku8bTaA"
-u_url = "https://u-test.ordr.in/u/"
-
-
 class MainPage(tornado.web.RequestHandler):
     def get(self):
+        print("Inside main page!")
         self.write(loader.load("index.html").generate(test="Test"))
-
 
 listener_callbacks = []
 
@@ -42,28 +38,62 @@ class Order(tornado.web.RequestHandler):
     def get(self):
         self.post()
     
-    def post(self):
-        #address = json.loads(address)
-        #place = Ordrin.Address()
+    def post(self, username, password, address_nick, card_nick):
+        #Constants
+        restid = "207"
+        tray="375710/1"
+        tip="0"
+        dDate="10-03"
+        dTime="13:00"
+        api_key = "GO-G43js4BGzQP2Ku8bTaA"
+
         order_amount = 1000
         if foodpot.amount > order_amount:
-            foodpot.subtract_amount(order_amount)
-            self.write("You won a free meal")
             #Make the order with the company's CC
+            #First ask for the user's address
+            Ordrin.api.initialize("https://u-test.ordr.in/", api_key)
+            Ordrin.api.setCurrAcct(username, password)
+            addr_json = Ordrin.u.getAddress(address_nick)
+            
+            Ordrin.api.initialize("https://o-test.ordr.in/", api_key)            
+            #Log in as Mark and pay for the user's meal
+            Ordrin.api.setCurrAcct("marksisus@gmail.com", "password")
+            result = Ordrin.o.submit_complete(restid, tray, tip, dDate, dTime, card_nick, 
+                                              addr=addr_json['addr'], 
+                                              city=addr_json['city'], 
+                                              state=addr_json['state'], 
+                                              zip=addr_json['zip'], 
+                                              phone=addr_json['phone'])
+            #Todo:Check for errors
+            foodpot.subtract_amount(order_amount)
+            self.write("10")            
+            
         else:
-            foodpot.add_amount(int(order_amount*.01))
-            self.write("You did not win a free meal")
+                
             #Make the order with the user's CC
+            Ordrin.api.initialize("https://o-test.ordr.in/", api_key)
+            Ordrin.api.setCurrAcct(username, password)            
+            Ordrin.o.submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick)
+            foodpot.add_amount(int(order_amount*.01))
+            
+            self.write("00")
+            
         while listener_callbacks:
             callback = listener_callbacks.pop()
+            print("Notifying listener " + str(callback.id))
             callback.notify(foodpot.amount)
 
-        
+class ListenRandomizer(tornado.web.RequestHandler):
+    def get(self):
+        randomstring = str(time.time()).replace(".", "") + str(random.randint(0,9999999))
+        print("In randomizer... => " + randomstring)
+        self.redirect("/listen/" + randomstring +"/")
+   
 class ListenPot(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def get(self, unique_string=None):
-        if not unique_string:
-            self.redirect("/listen/" + str(int(time.time())) +"/")
+    def get(self, unique_string):
+        self.id = unique_string
+        print("Unique listener: " + str(unique_string))
         listener_callbacks.append(self)
     
     def notify(self, amount):
@@ -72,12 +102,16 @@ class ListenPot(tornado.web.RequestHandler):
         self.write(str(amount))
         self.finish()
 
+class CurrentPot(tornado.web.RequestHandler):
+    def get(self):
+        self.write(str(foodpot.amount))
 
 application = tornado.web.Application([
                                        (r"/", MainPage),
                                        (r"/order/?", Order),
-                                       (r"/listen/?", ListenPot),
+                                       (r"/listen/?", ListenRandomizer),
                                        (r"/listen/(\d+)/?", ListenPot),
+                                       (r'/currentpot/?', CurrentPot),
                                        ],
                                       static_path= os.path.join(os.path.dirname(__file__), "res", "static")
                                       )

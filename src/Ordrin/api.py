@@ -55,7 +55,7 @@ def _request(type, *args):
   request.add_header('X-NAAMA-CLIENT-AUTHENTICATION', 'id="' + _key + '", version="1"')
   request.add_header("Content-Type", "application/x-www-form-urlencoded");
   
-  if args[0] == "u":
+  if args[0] == "u" or args[0] == "o":
     if not _currEmail or not _currPass:
       _errs.append(("user API", "valid email and password required to access user API"))
     print "Hash is being created."
