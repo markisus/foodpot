@@ -37,7 +37,7 @@ function userFormSubmit()
 	
 }
 
-function processResponse(data)
+function submitCCAddr(data)
 {
 	try
 	{
@@ -54,7 +54,6 @@ function processSignInResponse(data)
 	
 	var addr = obj.addresses;
 	var cc = obj.creditcards.ccs;
-	console.log(cc);
 	var addrdrop = document.getElementById("addrDrop");
 	var ccdrop = document.getElementById("ccDrop");
 	
@@ -77,6 +76,22 @@ function processSignInResponse(data)
 	}
 }
 
+function processResponse(data)
+{
+	switch(data)
+	{
+		case "00" : showResult("You did not win a free meal, but look on the bright side, at least your order was placed successfully."); break;
+		case "01" : showResult("Error processing your order. Please try again later."); break;
+		case "10" : showResult("You won a free meal! Enjoy some chow on us."); break;
+		case "11" : showResult("You won! Just kidding. Actually something wrong happened here..."); break;
+	}
+}
+
+function showResult(message)
+{
+	$("#result").text(message);
+}
+
 </script>
 </head>
 <body>
@@ -97,8 +112,11 @@ Password: <input type="password" name="password" />
 <select name="addrNick" id="addrDrop">
 <option>Select Address NickName</option>
 </select>
-<input type="submit" onclick="processResponse(); return false;" value="Submit" />
+<input type="submit" onclick="submitCCAddr(); return false;" value="Submit" />
 </form>
+
+<div id="result">
+
 </div>
 </body>
 </html>
