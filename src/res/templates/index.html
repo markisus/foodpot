@@ -4,28 +4,14 @@
 <head>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
-
-<!--
-<script type="text/javascript" src="/static/Ordrin.js"></script>
-<script type="text/javascript" src="/static/Address.js"></script>
-<script type="text/javascript" src="/static/DateTime.js"></script>
-<script type="text/javascript" src="/static/Money.js"></script>
-
-<script type="text/javascript" src="/static/datetimepicker.js"></script>
-
-<script type="text/javascript" src="/static/jquery.json2html/jquery.json2html-2.0-min.js"></script>
--->
+<script type="text/javascript" src="/static/potlistener.js"></script>
 <script type="text/javascript">
-
+console.log("Starting embedded jscript");
 function userFormSubmit()
 {
 	try
 	{
 		$.post("/info/", {username : document.userForm.email.value, password : document.userForm.password.value}, processSignInResponse);
-		
-//		Ordrin.u.setCurrAcct(document.userForm.email.value, document.userForm.password.value);
-//		Ordrin.u.getCard("", "feedCC");
-//		Ordrin.u.getAddress("", "feedAddr");
 		
 		document.getElementById("userForm").style.display = "none";
 		document.getElementById("postSignIn").style.display = "inline";
@@ -95,13 +81,14 @@ function showResult(message)
 
 </script>
 </head>
-<body>
+<body onload="draw();">
+<canvas id="canvas" width="10" height="300" border="1"></canvas>
 <form name="userForm" id="userForm">
 Email: <input type="text" name="email" />
 <br>
 Password: <input type="password" name="password" />
 <br>
-<input type="submit" onclick="userFormSubmit(); return false;" value="Submit"/>
+<a href="#" onclick="userFormSubmit(); return false;">Submit</a>
 </form>
 
 <form name="postSignIn" id="postSignIn" style="display:none">

@@ -17,12 +17,16 @@ function draw() {
 		});
 		
 	//Start listening for changes and draw the bar
-	function update() {
-		console.log("Calling listen");
+	function listen() {
 		$.get("/listen/", function(data) {
+			console.log("In listen callback");
 			drawBar(data);
-			update();
+			listen();
 		});
+		console.log("Finished calling listen.");
 	}
-	update();
+	console.log("Calling listen for the first time");
+	listen();
+	console.log("Ending listen for the first time");
 }
+console.log("finished potlistener");
