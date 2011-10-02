@@ -37,59 +37,43 @@ function userFormSubmit()
 	
 }
 
-function submitCCAddr()
+function processResponse(data)
 {
 	try
 	{
-		$.post("/order/", {card_nick : document.userForm.email.value, address_nick : document.userForm.password.value}, processResponse);
-		
-		
+		$.post("/order/", {username : document.userForm.email.value, password : document.userForm.password.value, address_nick : document.postSignIn.addrNick.value, card_nick : document.postSignIn.ccNick.value}, processResponse);
 	} catch (err)
 	{
 		console.log(err);
 	}
 }
 
-function processResponse(data)
-{
-	
-}
-
 function processSignInResponse(data)
 {
-	console.log(data);
-}
-
-function feedCC(data) 
-{
-	console.log("in feedCC");
-	console.log(data);
-	var drop = document.getElementById("ccDrop");
-	var cardarray = data.ccs;
+	var obj = $.parseJSON(data);
 	
-	for (i=0; i<cardarray.length; i++)
+	var addr = obj.addresses;
+	var cc = obj.creditcards.ccs;
+	console.log(cc);
+	var addrdrop = document.getElementById("addrDrop");
+	var ccdrop = document.getElementById("ccDrop");
+	
+	for (i=0; i<cc.length; i++)
 	{
 		var optn = document.createElement("option");
-		optn.text = cardarray[i].nick;
-		optn.value = cardarray[i].nick;
+		optn.text = cc[i].nick;
+		optn.value = cc[i].nick;
 		
-		drop.options.add(optn);
+		ccdrop.options.add(optn);
 	}
-}
-
-function feedAddr(data)
-{
-	console.log("in feedAddr");
-	console.log(data);
-	var drop = document.getElementById("addrDrop");
 	
-	for (i=0; i<data.length; i++)
+	for (i=0; i<addr.length; i++)
 	{
 		var optn = document.createElement("option");
-		optn.text = data[i].nick;
-		optn.value = data[i].nick;
+		optn.text = addr[i].nick;
+		optn.value = addr[i].nick;
 		
-		drop.options.add(optn);
+		addrdrop.options.add(optn);
 	}
 }
 
@@ -113,7 +97,7 @@ Password: <input type="password" name="password" />
 <select name="addrNick" id="addrDrop">
 <option>Select Address NickName</option>
 </select>
-<input type="submit" onclick="submitToServer(); return false;" value="Submit" />
+<input type="submit" onclick="processResponse(); return false;" value="Submit" />
 </form>
 </div>
 </body>
