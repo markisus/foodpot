@@ -10,6 +10,14 @@ import tornado.template
 
 loader = tornado.template.Loader(os.path.join(os.path.dirname(__file__), "res", "templates"))
 
+#Constants
+restid = "207"
+tray="375710/1"
+tip="0"
+dDate="10-03"
+dTime="13:00"
+api_key = "GO-G43js4BGzQP2Ku8bTaA"
+
 #The foodpot keeps track of how much money is available
 class FoodPot:
     def __init__(self):
@@ -39,13 +47,6 @@ class Order(tornado.web.RequestHandler):
         self.post()
     
     def post(self, username, password, address_nick, card_nick):
-        #Constants
-        restid = "207"
-        tray="375710/1"
-        tip="0"
-        dDate="10-03"
-        dTime="13:00"
-        api_key = "GO-G43js4BGzQP2Ku8bTaA"
 
         order_amount = 1000
         if foodpot.amount > order_amount:
@@ -106,12 +107,22 @@ class CurrentPot(tornado.web.RequestHandler):
     def get(self):
         self.write(str(foodpot.amount))
 
+class Info(tornado.web.RequestHandler):
+    def post(self, username, password):
+        Ordrin.api.initialize("https://u-test.ordr.in/", api_key)
+        Ordrin.api.setCurrAcct(username, password)
+        addresses = Ordrin.u.getAddress()
+        creditcards = Ordrin.u.getCard()
+        info = {"addresses":addresses, "creditcards":creditcards}
+        self.write(json.dumps(info))
+        
 application = tornado.web.Application([
                                        (r"/", MainPage),
                                        (r"/order/?", Order),
                                        (r"/listen/?", ListenRandomizer),
                                        (r"/listen/(\d+)/?", ListenPot),
                                        (r'/currentpot/?', CurrentPot),
+                                       (r'/info/?', Info),
                                        ],
                                       static_path= os.path.join(os.path.dirname(__file__), "res", "static")
                                       )

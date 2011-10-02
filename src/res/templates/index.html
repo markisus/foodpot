@@ -52,6 +52,8 @@ function submitToServer()
 
 function feedCC(data) 
 {
+	console.log("in feedCC");
+	console.log(data);
 	var drop = document.getElementById("ccDrop");
 	var cardarray = data.ccs;
 	
@@ -67,6 +69,8 @@ function feedCC(data)
 
 function feedAddr(data)
 {
+	console.log("in feedAddr");
+	console.log(data);
 	var drop = document.getElementById("addrDrop");
 	
 	for (i=0; i<data.length; i++)
