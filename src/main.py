@@ -18,7 +18,7 @@ tip="0"
 dDate="10-03"
 dTime="13:00"
 api_key = "GO-G43js4BGzQP2Ku8bTaA"
-order_amount = 1000
+order_amount = 1099
 
 #The foodpot keeps track of how much money is available
 class FoodPot:

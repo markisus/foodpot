@@ -6,14 +6,43 @@
 <img src="/static/banner4.png" alt="Welcome to FoodPot!">
 </center>
 <title>FoodPot</title>
+
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/static/style.css">
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/static/potlistener.js"></script>
 <script type="text/javascript" src="/static/spin.js"></script>
+</head>
+
+<body onload="draw();">
+<br/><br/><br/><br/>
+<center>
+<form name="userForm" id="userForm">
+Login: <input type="text" name="email" placeholder="Email" style="width:150px"/> 
+<input type="password" name="password" placeholder="Password" style="width:150px"/>
+<input type="submit" onclick="userFormSubmit(); return false;" value="Login" />
+</form>
+</center>
+<center>
+<form name="postSignIn" id="postSignIn" style="display:none">
+Order Info:
+<select name="ccNick" id="ccDrop" style="width:150px">
+<option>Select Saved Credit Card</option>
+</select>
+<select name="addrNick" id="addrDrop" style="width:150px">
+<option>Select Saved Address</option>
+</select>
+<input type="submit" onclick="submitCCAddr(); return false;" value="Select" />
+</form>
+<div id="result">
+</div>
+
+<div id='progressbar' style="width:300px"></div>
+</center>
+
 <script type="text/javascript">
 console.log("Starting embedded jscript");
-
 
 var opts = {
   lines: 12, // The number of lines to draw
@@ -26,16 +55,16 @@ var opts = {
   shadow: false // Whether to render a shadow
 };
 
-var target1 = document.getElementById("result");
-var target2 = document.getElementById("result");
+var target = document.getElementById("status");
+console.log(target);
 var spinner;
-var spinner2;
 
 function userFormSubmit()
 {
 	try
 	{
-		spinner = new Spinner(opts).spin(target1);
+		spinner = new Spinner(opts).spin(target);
+		console.log("Spinner started");
 		$.post("/info/", {username : document.userForm.email.value, password : document.userForm.password.value}, processSignInResponse);
 		
 		document.getElementById("userForm").style.display = "none";
@@ -54,7 +83,8 @@ function submitCCAddr(data)
 	{
 		console.log("Submitting order!");
 		//document.getElementById("spinner").style.display = "inline";
-		spinner2 = new Spinner(opts).spin(target2);
+		console.log("Starting spinner");
+		spinner = new Spinner(opts).spin(target);
 		$.post("/order/", {username : document.userForm.email.value, password : document.userForm.password.value, address_nick : document.postSignIn.addrNick.value, card_nick : document.postSignIn.ccNick.value}, processResponse);
 	
 	} catch (err)
@@ -92,6 +122,7 @@ function processSignInResponse(data)
 	}
 	
 	//document.getElementById("spinner").style.display = "none";
+	console.log("Stopping spinner");
 	spinner.stop();
 }
 
@@ -101,7 +132,8 @@ function processResponse(data)
 	console.log(data);
 	document.getElementById("postSignIn").style.display = "none";
 	//document.getElementById("spinner").style.display = "none";
-	spinner2.stop()
+	console.log("Stopping spinner");
+	spinner.stop()
 	
 	switch(data)
 	{
@@ -118,32 +150,5 @@ function showResult(message)
 }
 
 </script>
-</head>
-<body onload="draw();">
-<center>
-<canvas id="canvas" width="10" height="300" border="1"></canvas>
-<form name="userForm" id="userForm">
-Login: <input type="text" name="email" placeholder="Email" style="width:150px"/> 
-<input type="password" name="password" placeholder="Password" style="width:150px"/>
-<input type="submit" onclick="userFormSubmit(); return false;" value="Login" />
-</form>
-</center>
-<center>
-<form name="postSignIn" id="postSignIn" style="display:none">
-Order Info:
-<select name="ccNick" id="ccDrop" style="width:150px">
-<option>Select Saved Credit Card</option>
-</select>
-<select name="addrNick" id="addrDrop" style="width:150px">
-<option>Select Saved Address</option>
-</select>
-<input type="submit" onclick="submitCCAddr(); return false;" value="Select" />
-<img id="spinner" src="/static/spinner.gif" style="display:none">
-</form>
-
-<div id="result">
-
-</div>
-</center>
 </body>
 </html>
