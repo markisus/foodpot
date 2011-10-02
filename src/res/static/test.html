@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  
+  <title>Ordrin JS API Demo</title>
+  
+  <script type="text/javascript" src="Ordrin.js"></script>
+  <script type="text/javascript" src="Address.js"></script>
+  <script type="text/javascript" src="DateTime.js"></script>
+  <script type="text/javascript" src="Money.js"></script>
+  
+  <script type="text/javascript" src="datetimepicker.js"></script>
+  
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="jquery.json2html/jquery.json2html-2.0-min.js"></script>
+  
+  <script type="text/javascript">
+  // 1 switch as last argument in initialize indicates whether or not JSONP is being used!
+  // If JSONP is being used, be sure that the callback function referenced in the API is enclosed in quotation marks! ("")
+  
+  try {
+    Ordrin.initialize('eMIQQMiX4BG9R81', { 'restaurant':'https://r-test.ordr.in', 'user':'https://u-test.ordr.in', 'order':'https://o-test.ordr.in' }, 'JSONP');
+  } catch (err) {
+    console.log(err);
+  }
+  
+  function restAPISubmit() {
+    try {
+      switch(document.restAPIForm.func.value) {
+        case "delList": {
+          if (document.restAPIForm.dT.value == "ASAP") {
+            var time = new Date();
+            time.setASAP();
+          } else {
+            var time = new Date(document.restAPIForm.dT.value);
+          }
+          
+          var place = new Address(document.restAPIForm.sA.value, "", document.restAPIForm.city.value, document.restAPIForm.zip.value);
+          
+          Ordrin.r.deliveryList(time, place, "feed");
+        } break;
+        case "delCheck": {
+          if (document.restAPIForm.dT.value == "ASAP") {
+            var time = new Date();
+            time.setASAP();
+          } else {
+            var time = new Date(document.restAPIForm.dT.value);
+          }
+          
+          var place = new Address(document.restAPIForm.sA.value, "", document.restAPIForm.city.value, document.restAPIForm.zip.value);
+          
+          Ordrin.r.deliveryCheck(document.restAPIForm.rID.value, time, place, "feed");
+        } break;
+        case "delFee": {
+          var subtotal = new Money(document.restAPIForm.sT.value);
+          var tip = new Money(document.restAPIForm.tip.value);
+          
+          if (document.restAPIForm.dT.value == "ASAP") {
+            var time = new Date();
+            time.setASAP();
+          } else {
+            var time = new Date(document.restAPIForm.dT.value);
+          }
+          
+          var place = new Address(document.restAPIForm.sA.value, "", document.restAPIForm.city.value, document.restAPIForm.zip.value);
+          
+          Ordrin.r.deliveryFee(document.restAPIForm.rID.value, subtotal, tip, time, place, "feed");
+        } break;
+        case "restDetails": {
+          Ordrin.r.details(document.restAPIForm.rID.value, "feed");
+        } break;
+      }
+    } catch (err) { console.log(err); }
+  }
+  
+  function userAPISubmit() {
+    try {
+      Ordrin.u.setCurrAcct(document.userAPIForm.email.value, document.userAPIForm.password.value);
+      switch(document.userAPIForm.func.value) {
+        case "getAcct": Ordrin.u.getAcct("feed"); break;
+        case "makeAcct": Ordrin.u.makeAcct(document.userAPIForm.email.value, document.userAPIForm.password.value, document.userAPIForm.firstName.value, document.userAPIForm.lastName.value, "feed"); break;
+        case "updatePass":
+          Ordrin.u.setCurrAcct(document.userAPIForm.email.value, document.userAPIForm.oldPassword.value);
+          Ordrin.u.updatePassword(document.userAPIForm.password.value, "feed"); break;
+        case "getAddr": Ordrin.u.getAddress(document.userAPIForm.addrNick.value, "feed"); break;
+        case "updAddr":
+          var place = new Address(document.userAPIForm.sA.value, document.userAPIForm.sA2.value, document.userAPIForm.city.value, document.userAPIForm.zip.value, document.userAPIForm.state.value, document.userAPIForm.phone.value, document.userAPIForm.addrNick.value);
+          Ordrin.u.updateAddress(place, "feed"); break;
+        case "delAddr": Ordrin.u.deleteAddress(document.userAPIForm.addrNick.value, "feed"); break;
+        case "getCard": Ordrin.u.getCard(document.userAPIForm.cardNick.value, "feed"); break;
+        case "updCard":
+          var place = new Address(document.userAPIForm.sA.value, document.userAPIForm.sA2.value, document.userAPIForm.city.value, document.userAPIForm.zip.value, document.userAPIForm.state.value, document.userAPIForm.phone.value, document.userAPIForm.addrNick.value);
+          Ordrin.u.updateCard(document.userAPIForm.cardNick.value, document.userAPIForm.firstName.value + " " +  document.userAPIForm.lastName.value, document.userAPIForm.cardNum.value, document.userAPIForm.cvc.value, document.userAPIForm.expMonth.value, document.userAPIForm.expYear.value, place, "feed"); break;
+        case "delCard": Ordrin.u.deleteCard(document.userAPIForm.cardNick.value, "feed"); break;
+        case "getOrdrs": Ordrin.u.orderHistory("", "feed"); break;
+        case "getOrdrInfo": Ordrin.u.orderHistory(document.userAPIForm.ordrID.value, "feed"); break;
+      }
+    } catch (err) { console.log(err); }
+  }
+  
+  function orderAPISubmit() {
+    try {
+      var place = new Address(document.orderAPIForm.sA.value, document.orderAPIForm.sA2.value, document.orderAPIForm.city.value, document.orderAPIForm.zip.value, document.orderAPIForm.state.value, document.orderAPIForm.phone.value);
+      var tip = new Money(document.orderAPIForm.tip.value);
+      if (document.restAPIForm.dT.value == "ASAP") {
+        var time = new Date();
+        time.setASAP();
+      } else {
+        var time = new Date(document.restAPIForm.dT.value);
+      }
+          
+      var successUrl = "http://localhost:8001/demo/test.html";
+      var failUrl = "http://localhost:8001/demo/test.html";
+      
+      Ordrin.o.submit(document.orderAPIForm.restID.value, document.orderAPIForm.tray.value, tip, time, document.orderAPIForm.email.value, document.orderAPIForm.firstName.value, document.orderAPIForm.lastName.value, place, document.orderAPIForm.firstName.value + " " + document.orderAPIForm.lastName.value, document.orderAPIForm.cardNum.value, document.orderAPIForm.cvc.value, document.orderAPIForm.expMonth.value + "/" + document.orderAPIForm.expYear.value, place, successUrl, failUrl);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  
+  var transform = [{"tag":"div","html":function(obj) {
+    if (obj.id) {
+      var id = obj.id;
+    } else if (obj.rid) {
+      var id = obj.rid;
+    } else if (obj.em) {
+      var id = obj.em;
+    } else if (obj.name) {
+      var id = obj.name;
+    } else {
+      var id = obj.msg;
+    } // set identifier as ID, restaurant ID, or name returned
+    return("<b>" + id + "</b>: " + JSON.stringify(obj)); // generate list of JSON data returned
+  }}]
+
+  function feed(data) {
+    $("#jsonOutput").json2html(data, transform);// document.getElementById('jsonOutput').innerHTML = JSON.stringify(data);
+  }
+  
+  function showForm(form) {
+    document.restAPIForm.setAttribute('style', 'display:none');
+    document.userAPIForm.setAttribute('style', 'display:none');
+    document.orderAPIForm.setAttribute('style', 'display:none');
+
+    document.getElementById('jsonOutput').innerHTML = "";
+    
+    document.getElementById(form).setAttribute('style', 'display:inline');
+  }
+  
+  function restAPIDisplay() {
+    document.getElementById("initialR").style.display = "inline";
+    var display = [];
+    switch(document.restAPIForm.func.value) {
+      case "delList": display = ["hidden", "hidden", "hidden", "visible", "visible", "visible", "visible"]; break;
+      case "delCheck": display = ["hidden", "hidden", "visible", "visible", "visible", "visible", "visible"]; break;
+      case "delFee": display = ["visible", "visible", "visible", "visible", "visible", "visible", "visible"]; break;
+      case "restDetails": display = ["hidden", "hidden", "visible", "hidden", "hidden", "hidden", "hidden"]; break;
+    }
+    
+    document.restAPIForm.sT.style.visibility = display[0];
+    document.restAPIForm.tip.style.visibility = display[1];
+    document.restAPIForm.rID.style.visibility = display[2];
+    document.restAPIForm.dT.style.visibility = display[3];
+    document.restAPIForm.sA.style.visibility = display[4];
+    document.restAPIForm.city.style.visibility = display[5];
+    document.restAPIForm.zip.style.visibility = display[6];
+  }
+  
+  function userAPIDisplay() {
+    document.getElementById("initialU").style.display = "inline";
+    var display = [];
+    switch(document.userAPIForm.func.value) {
+      case "getAcct": display = ["visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "makeAcct": display = ["visible", "visible", "hidden", "visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "updatePass": display = ["visible", "visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "getAddr": display = ["visible", "visible", "hidden", "hidden", "hidden", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "updAddr": display = ["visible", "visible", "hidden", "hidden", "hidden", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "delAddr": display = ["visible", "visible", "hidden", "hidden", "hidden", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "getCard": display = ["visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "visible", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "updCard": display = ["visible", "visible", "hidden", "visible", "visible", "hidden", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "visible", "hidden"]; break;
+      case "delCard": display = ["visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "getOrdrs": display = ["visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden"]; break;
+      case "getOrdrInfo": display = ["visible", "visible", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "hidden", "visible"]; break;
+    }
+    
+    document.userAPIForm.email.style.visibility = display[0];
+    document.userAPIForm.password.style.visibility = display[1];
+    document.userAPIForm.oldPassword.style.visibility = display[2]
+    document.userAPIForm.firstName.style.visibility = display[3];
+    document.userAPIForm.lastName.style.visibility = display[4];
+    document.userAPIForm.addrNick.style.visibility = display[5];
+    document.userAPIForm.sA.style.visibility = display[6];
+    document.userAPIForm.sA2.style.visibility = display[7];
+    document.userAPIForm.city.style.visibility = display[8];
+    document.userAPIForm.state.style.visibility = display[9];
+    document.userAPIForm.zip.style.visibility = display[10];
+    document.userAPIForm.phone.style.visibility = display[11];
+    document.userAPIForm.cardNick.style.visibility = display[12];
+    document.userAPIForm.cardNum.style.visibility = display[13];
+    document.userAPIForm.cvc.style.visibility = display[14];
+    document.userAPIForm.expMonth.style.visibility = display[15];
+    document.userAPIForm.expYear.style.visibility = display[16];
+    document.userAPIForm.ordrID.style.visibility = display[17];
+  }
+  </script>
+
+  <style type="text/css" media="screen">
+  body {
+    background-color: #FFF;
+    font-size: 13px;
+    font-family: Arial, SunSans-Regular, Sans-Serif;
+    color:#564b47;  
+    padding:0 20px;
+    margin:0;
+  }
+  
+  p, pre{
+    padding:10px;
+    margin:0;
+  }
+   
+   
+  h1 {
+    font-size: 14px;
+    text-transform:uppercase;
+    text-align: right;
+    color: #564b47;
+    background-color: #ecefe9;
+    padding:5px 15px;
+    margin:0;
+  }
+   
+  h3 {
+    font-size:16px;
+    padding-top:10px;
+    text-transform:uppercase;
+    padding-left:0px;
+    color: #564b47;
+    background-color: transparent;
+  }
+  
+  a { 
+    color: #FFF;
+    font-size: 16px;
+    background-color:transparent;
+    text-decoration: none;
+    font-weight:bold;
+    margin:14px;
+  }
+    
+  #menu {
+    position: absolute;
+    width: 200px;
+    left: 20px;
+    background-color: #ff1415;
+    padding:10px 0 10px 0;
+    margin:0;
+  }
+  #content {
+    margin-left: 200px;
+    padding-left:25px;
+    padding-bottom:25px;
+    background-color:#f4f4ef;
+    overflow: auto;
+  }
+  #initialU, #initialR, #restAPIForm, #userAPIForm, #orderAPIForm {
+    display:none;
+  }
+</style>
+
+</head>
+
+<body>
+<p align="right"><a href="http://www.ordr.in"><img src="http://ordr.in/images/ordrin-net-logo.png" /></a></p> 
+<h1>ordrin javascript api demo</h1>
+
+<div id="menu"> 
+  <a href="#restAPI" onclick="showForm('restAPIForm');">Restaurant API</a><br />
+  <a href="#userAPI" onclick="showForm('userAPIForm');">User API</a><br />
+  <a href="#orderAPI" onclick="showForm('orderAPIForm');">Order API</a><br />
+</div> 
+ 
+<div id="content"> 
+  <h3>Select an API to the left and one of its functions below to begin testing.</h3>
+  <form name="restAPIForm" id="restAPIForm">
+    <select name="func" onchange="restAPIDisplay();">
+      <option value="select">Select an API function</option>
+      <option value="delList">Delivery List</option>
+      <option value="delCheck">Delivery Check</option>
+      <option value="delFee">Delivery Fee</option>
+      <option value="restDetails">Restaurant Details</option>
+    </select><br /><br />
+    <div id="initialR">
+    Subtotal: <input name="sT" type="text" size="4"><br />
+    Tip: <input name="tip" type="text" size="4"><br /><br />
+    Restaurant ID: <input name="rID" type="text" size="4"> <br />
+    
+    Date/time: <input name="dT" type="text" size="25"><a href="javascript:NewCal('dT','mmmddyyyy',true,24)"><img src="cal.gif" width="16" height="16" border="0" alt="Pick a date"></a><br />
+    Street address: <input name="sA" type="text" size="35" value="1 Main St"> <br />
+    City: <input name="city" type="text" size="15" value="College Station"> <br />
+    Zip code: <input name="zip" type="text" size="5" value="77840"> <br /><br />
+    <input type="submit" onclick="restAPISubmit(); return false;"> <input type="reset"></div>
+  </form>
+
+  <form name="userAPIForm" id="userAPIForm">
+    <select name="func" onchange="userAPIDisplay();">
+      <option>Select function</option>
+      <optgroup label="Account Settings">
+        <option value="getAcct">Get account info</option>
+        <option value="makeAcct">Create account</option>
+        <option value="updatePass">Update password</option>
+      </optgroup>
+      <optgroup label="Addresses">
+        <option value="getAddr">Get saved address(es)</option>
+        <option value="updAddr">Save/update address</option>
+        <option value="delAddr">Delete address</option>
+      </optgroup>
+      <optgroup label="Credit cards">
+        <option value="getCard">Get saved card(s)</option>
+        <option value="updCard">Save/update card</option>
+        <option value="delCard">Delete card</option>
+      </optgroup>
+      <optgroup label="Order History">
+        <option value="getOrdrs">Get previous orders</option>
+        <option value="getOrdrInfo">Get info on specific order</option>
+      </optgroup>
+    </select><br /><br />
+    <div id="initialU">
+    Email: <input name="email" type="text" size="20" value="test0@testing.com"> <br />
+    Password: <input name="password" type="text" size="20" value="testing3"> <input name="oldPassword" type="text" size="20" value="old password (if updating)"> <br /><br />
+    First name: <input name="firstName" type="text" size="12" value="Test"> Last name: <input name="lastName" type="text" size="12" value="Testing"><br />
+    
+    Address name (home, work, etc.): <input name="addrNick" type="text" size="10" value="Home"><br />
+    Address: <input name="sA" type="text" size="20" value="12 Main Street"> <input name="sA2" type="text" size="10" value="Suite 200"><br />
+    City: <input name="city" type="text" size="20" value="College Station"> State: <input name="state" type="text" size="2" value="TX"> ZIP: <input name="zip" type="text" size="5" value="77840"><br />
+    Phone number: <input name="phone" type="text" size="10" value="6789101112"><br /><br />
+    
+    Card name (personal, business, etc.): <input name="cardNick" type="text" size="10" value="Home"><br />
+    Card number: <input name="cardNum" type="text" size="16" value="4111111111111111"> Security code (3 or 4 digits): <input name="cvc" type="text" size="4" value="777"><br />
+    Expiration month: <input name="expMonth" type="text" size="2" value="12"> Expiration year: <input name="expYear" type="text" size="4" value="2012"><br /><br />
+    Order ID: <input name="ordrID" type="text" size="4" value=""><br /><br />
+    <input type="submit" onclick="userAPISubmit(); return false;"> <input type="reset"></div>
+  </form>
+  <form name="orderAPIForm" id="orderAPIForm">
+    <input name="_auth" value="1,iqR9QxyZ4BGaRMJBVL260g" type=hidden>
+    Restaurant ID: <input name="restID" type="text" size="4" value="101"><br /><br />
+
+    Tip: <input name="tip" type="text" size="3" value="10"><br />
+    Tray: <input name="tray" type="text" size="50" value="[29003][3]"><br />
+    <i>(ex: [menu item id]/[qty],[option id],[option id]+[menu item id 2]/[qty]+...</i><br /><br />
+    
+    Email: <input name="email" type="text" size="20" value="test0@testing.com"><br />
+    Password: <input name="password" type="text" size="20" value="testing3"><br />
+    First name: <input name="firstName" type="text" size="12" value="Test"> Last name: <input name="lastName" type="text" size="12" value="Testing"><br />
+
+    Date/time: <input name="dT" type="text" size="25" value="ASAP"><a href="javascript:NewCal('dT','mmmddyyyy',true,24)"><img src="cal.gif" width="16" height="16" border="0" alt="Pick a date"></a><br />
+
+    Address: <input name="sA" type="text" size="20" value="1 Main Street"> <input name="sA2" type="text" size="10" value=""><br />
+    City: <input name="city" type="text" size="20" value="College Station"> State: <input name="state" type="text" size="2" value="TX"> ZIP: <input name="zip" type="text" size="5" value="32501"><br />
+    Phone number: <input name="phone" type="text" size="10" value="6789101112"><br /><br />
+    
+    Card number: <input name="cardNum" type="text" size="16" value="4111111111111111"> Security code (3 or 4 digits): <input name="cvc" type="text" size="4" value="777"><br />
+    Expiration month: <input name="expMonth" type="text" size="2" value="12"> Expiration year: <input name="expYear" type="text" size="2" value="12"><br /><br />
+
+    <input type="submit" onclick="orderAPISubmit(); return false;"> <input type="reset">
+  </form>
+
+  <h3>Response</h3>
+  <div id="jsonOutput">
+
+</div>
+</div> 
+
+</body>
+</html>

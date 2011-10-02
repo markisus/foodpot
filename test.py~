@@ -1,0 +1,28 @@
+# Demo app to illustrate Python API functionality
+
+import Ordrin, sys
+
+print "Ordrin Python API Demo"
+print "Defaulting to time: ASAP"
+print "Defaulting to College Station, TX address"
+place = Ordrin.Address("1 Main St", "College Station", "77840", "", "TX", "7777777777", "home")
+when = Ordrin.dTime.now()
+when.asap()
+
+# remainder of app self-explanatory
+  
+def user():
+  Ordrin.api.initialize("GO-G43js4BGzQP2Ku8bTaA", "http://u-test.ordr.in")
+  
+  email = raw_input("Email? ")
+  password = raw_input("Password? ")
+  fName = raw_input("First name? ")
+  lName = raw_input("Last name? ")
+  Ordrin.u.makeAcct(email, password, fName, lName)
+      
+def setAcct():
+  setUser = raw_input("Username? ")
+  setPass = raw_input("Password? ")
+  Ordrin.api.setCurrAcct(setUser, setPass)
+ 
+user()

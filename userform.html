@@ -1,0 +1,34 @@
+<html>
+<head>
+<script type="text/javascript" src="jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="static/Ordrin.js"></script>
+<script type="text/javascript" src="static/Address.js"></script>
+<script type="text/javascript" src="static/DateTime.js"></script>
+<script type="text/javascript" src="static/Money.js"></script>
+
+<script type="text/javascript" src="static/datetimepicker.js"></script>
+
+<script type="text/javascript" src="static/jquery.json2html/jquery.json2html-2.0-min.js"></script>
+<script type="text/javascript">
+</script>
+</head>
+<body>
+<form method="post" id="signin" action="/order/">
+Username: <input type="text" name="uname" />
+<br>
+Password: <input type="password" name="password" />
+<br>
+<input type="submit" value="Submit" id="submit"/>
+</form>
+
+<script>
+$('#submit').click(function()
+{
+	var uname = $('input[name=uname]');
+	var passwd = $('input[name=password]');
+	
+	var data =
+}
+</script>
+</body>
+</html>

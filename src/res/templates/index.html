@@ -1,9 +1,106 @@
-<html>
-	<head>
-		<title>foodpot</title>
-	<head>
-	<body>
-		<h1>foodpot</h1>
-		{{ test }}
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/Ordrin.js"></script>
+<script type="text/javascript" src="/static/Address.js"></script>
+<script type="text/javascript" src="/static/DateTime.js"></script>
+<script type="text/javascript" src="/static/Money.js"></script>
+
+<script type="text/javascript" src="/static/datetimepicker.js"></script>
+
+<script type="text/javascript" src="/static/jquery.json2html/jquery.json2html-2.0-min.js"></script>
+<script type="text/javascript">
+try
+{
+	Ordrin.initialize('GO-G43js4BGzQP2Ku8bTaA', 'https://u-test.ordr.in', 'JSONP');
+} catch (err)
+{
+	console.log(err);
+}
+
+function userFormSubmit()
+{
+	try
+	{
+		Ordrin.u.setCurrAcct(document.userForm.email.value, document.userForm.password.value);
+		Ordrin.u.getCard("", "feedCC");
+		Ordrin.u.getAddress("", "feedAddr");
+		
+		document.getElementById("userForm").style.display = "none";
+		document.getElementById("postSignIn").style.display = "inline";
+		
+	} catch (err)
+	{
+		console.log(err);
+	}
+	
+}
+
+function submitToServer()
+{
+	try
+	{
+		$.post("/order/", {username : document.userForm.email.value, password : document.userForm.password.value, card_nick : document.postSignIn.ccNick.value, address_nick : document.postSignIn.addrNick.value});
+	} catch (err)
+	{
+		console.log(err);
+	}
+}
+
+function feedCC(data) 
+{
+	var drop = document.getElementById("ccDrop");
+	var cardarray = data.ccs;
+	
+	for (i=0; i<cardarray.length; i++)
+	{
+		var optn = document.createElement("option");
+		optn.text = cardarray[i].nick;
+		optn.value = cardarray[i].nick;
+		
+		drop.options.add(optn);
+	}
+}
+
+function feedAddr(data)
+{
+	var drop = document.getElementById("addrDrop");
+	
+	for (i=0; i<data.length; i++)
+	{
+		var optn = document.createElement("option");
+		optn.text = data[i].nick;
+		optn.value = data[i].nick;
+		
+		drop.options.add(optn);
+	}
+}
+
+</script>
+</head>
+<body>
+<form name="userForm" id="userForm">
+Email: <input type="text" name="email" />
+<br>
+Password: <input type="password" name="password" />
+<br>
+<input type="submit" onclick="userFormSubmit(); return false;" value="Submit"/>
+</form>
+
+<form name="postSignIn" id="postSignIn" style="display:none">
+<select name="ccNick" id="ccDrop">
+<option>Select Credit Card Nickname</option>
+</select>
+<br>
+<br>
+<select name="addrNick" id="addrDrop">
+<option>Select Address NickName</option>
+</select>
+<input type="submit" onclick="submitToServer(); return false;" value="Submit" />
+</form>
+</div>
+</body>
 </html>
