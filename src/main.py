@@ -56,11 +56,11 @@ class Order(tornado.web.RequestHandler):
         if foodpot.amount > order_amount:
             #Make the order with the company's CC
             #First ask for the user's address
-            Ordrin.api.initialize("https://u-test.ordr.in/", api_key)
+            Ordrin.api.initialize(api_key, "https://u-test.ordr.in/")
             Ordrin.api.setCurrAcct(username, password)
             addr_json = Ordrin.u.getAddress(address_nick)
             
-            Ordrin.api.initialize("https://o-test.ordr.in/", api_key)            
+            Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")            
             #Log in as Mark and pay for the user's meal
             Ordrin.api.setCurrAcct("marksisus@gmail.com", "password")
             result = Ordrin.o.submit_complete(restid, tray, tip, dDate, dTime, card_nick, 
@@ -76,7 +76,7 @@ class Order(tornado.web.RequestHandler):
         else:
                 
             #Make the order with the user's CC
-            Ordrin.api.initialize("https://o-test.ordr.in/", api_key)
+            Ordrin.api.initialize(api_key, "https://o-test.ordr.in/")
             Ordrin.api.setCurrAcct(username, password)            
             Ordrin.o.submit_less(restid, tray, tip, dDate, dTime, card_nick, address_nick)
             foodpot.add_amount(int(order_amount*.01))
@@ -116,7 +116,7 @@ class Info(tornado.web.RequestHandler):
         username = self.get_argument("username")
         password = self.get_argument("password")
 
-        Ordrin.api.initialize("https://u-test.ordr.in/", api_key)
+        Ordrin.api.initialize(api_key, "https://u-test.ordr.in/")
         Ordrin.api.setCurrAcct(username, password)
         addresses = Ordrin.u.getAddress()
         creditcards = Ordrin.u.getCard()
