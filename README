@@ -1,0 +1,17 @@
+This is a project using the ordr.in (food delivery) API and Tornado  
+
+ordr.in gives commission on the orders placed through it.  
+We put all the comissions a pot, and the first person to  
+make an order when the pot fills gets his order for free.  
+The pot fills up realtime.  
+
+Along the way, we found some bugs (and undocumented features)  
+in the ordr.in python library, so the library included in this  
+project has some changes compared to the official release.
+(look in /src/Ordrin)  
+
+We tried to implement a threaded server, but it ended up crashing  
+during the demo (so something in the code is buggy / not thread safe.  
+oops!)  
+
+run src/main.py
